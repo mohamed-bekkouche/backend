@@ -2,13 +2,16 @@ import { Server } from "socket.io";
 import Message from "./models/Message.js";
 import Notification from "./models/Notification.js";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const initializeSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: process.env.ORIGIN || "http://localhost:3000",
       credentials: true,
-      methods: ["GET", "POST", "PATCH"],
+      methods: ["GET", "POST", "PATCH", "PUT"],
     },
   });
 

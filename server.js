@@ -31,7 +31,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), handleWebhook);
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN || "http://localhost:3000",
     credentials: true,
   })
 );
