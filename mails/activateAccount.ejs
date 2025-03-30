@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activate Your Account</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        line-height: 1.6;
+        background-color: #f4f7fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background-color: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        text-align: center;
+        padding: 20px;
+      }
+      .content {
+        padding: 30px;
+        text-align: center;
+      }
+      .activation-code {
+        background-color: #f0f4f8;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+        font-size: 24px;
+        letter-spacing: 3px;
+        color: #2c3e50;
+        font-weight: bold;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+      }
+      .cta-button:hover {
+        background-color: #2980b9;
+      }
+      .footer {
+        background-color: #f4f7fa;
+        text-align: center;
+        padding: 15px;
+        font-size: 0.9rem;
+        color: #666;
+        border-top: 1px solid #e9ecef;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Account Activation</h1>
+      </div>
+      <div class="content">
+        <h2>Hello <%= username %>!</h2>
+        <p>To activate your account, please use the activation code below:</p>
+
+        <div class="activation-code"><%= activationCode %></div>
+
+        <p>Or click the button below to activate your account:</p>
+
+        <a href="<%= activationUrl %>" class="cta-button">Activate Account</a>
+
+        <p>If you didn't create an account, please ignore this email.</p>
+      </div>
+      <div class="footer">© <%= new Date().getFullYear() %> DEEPVISION LAB</div>
+    </div>
+  </body>
+</html>

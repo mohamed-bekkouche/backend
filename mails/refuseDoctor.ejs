@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctor Account Rejection</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        line-height: 1.6;
+        background-color: #f4f7fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background-color: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        text-align: center;
+        padding: 20px;
+      }
+      .content {
+        padding: 30px;
+        text-align: center;
+      }
+      .rejection-message {
+        background-color: #fdedec;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #2c3e50;
+      }
+      .contact-button {
+        display: inline-block;
+        background-color: #e74c3c;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+      }
+      .contact-button:hover {
+        background-color: #c0392b;
+      }
+      .footer {
+        background-color: #f4f7fa;
+        text-align: center;
+        padding: 15px;
+        font-size: 0.9rem;
+        color: #666;
+        border-top: 1px solid #e9ecef;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Account Application Declined</h1>
+      </div>
+      <div class="content">
+        <h2>Dear Dr. <%= doctorName %>,</h2>
+        <p>
+          We regret to inform you that your account application has been
+          declined.
+        </p>
+
+        <div class="rejection-message">
+          <strong>Reason for Rejection:</strong> <%= rejectionReason %>
+        </div>
+
+        <p>
+          If you believe this decision is incorrect or would like to discuss
+          further, please contact our support team.
+        </p>
+
+        <a href="<%= supportContactUrl %>" class="contact-button"
+          >Contact Support</a
+        >
+
+        <p>We appreciate your understanding.</p>
+      </div>
+      <div class="footer">© <%= new Date().getFullYear() %> DEEPVISION LAB</div>
+    </div>
+  </body>
+</html>
