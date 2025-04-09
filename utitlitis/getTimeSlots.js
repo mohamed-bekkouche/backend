@@ -1,0 +1,20 @@
+export function generateTimeSlots(selectedDate) {
+  const slots = [];
+  const start = 8 * 60; // 8:00 in minutes
+  const end = 16 * 60; // 16:00 in minutes
+
+  // Use the provided date instead of current date
+  const baseDate = new Date(selectedDate);
+
+  for (let mins = start; mins < end; mins += 30) {
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+
+    // Create a new date object with the selected date
+    const slot = new Date(baseDate);
+    slot.setHours(hours, minutes, 0, 0);
+    slots.push(slot);
+  }
+
+  return slots;
+}

@@ -7,6 +7,8 @@ import {
   logOut,
   updateUser,
   changeAvatar,
+  initiatePasswordRecovery,
+  resetPassword,
 } from "../controllers/UserController.js";
 import { authenticateToken } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multerConfig.js";
@@ -27,5 +29,8 @@ userRoutes.put(
   upload.single("image"),
   changeAvatar
 );
+
+userRoutes.put("/pass_recovery", initiatePasswordRecovery);
+userRoutes.put("/pass_reset", resetPassword);
 
 export default userRoutes;

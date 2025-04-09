@@ -6,10 +6,61 @@ import mongoose from "mongoose";
 import Doctor from "../models/Doctor.js";
 import Patient from "../models/Patient.js";
 import { sendNotification } from "../utitlitis/notification.js";
+import { generateTimeSlots } from "../utitlitis/getTimeSlots.js";
 
 export const isPremium = (expDate) => {
   if (!expDate) return false;
   return new Date(expDate) > new Date();
+};
+
+const formatSlotRange = (slotISO) => {
+  const start = new Date(slotISO);
+  const end = new Date(start.getTime() + 30 * 60 * 1000); // +30 mins
+
+  const options = { hour: "2-digit", minute: "2-digit" };
+  return `${start.toLocaleTimeString([], options)} - ${end.toLocaleTimeString(
+    [],
+    options
+  )}`;
+};
+
+export const getAvailableSlots = async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(selectedDate.getDate() + 1);
+
+    const appointments = await Appointment.find({
+      date: {
+        $gte: selectedDate,
+        $lt: nextDay,
+      },
+      status: "Approved",
+    });
+
+    const bookedTimes = appointments.map((appointment) => {
+      const time = new Date(appointment.time);
+      return `${time.getHours()}:${time.getMinutes()}`;
+    });
+
+    const allSlots = generateTimeSlots(selectedDate);
+
+    const availableSlots = allSlots.filter((slot) => {
+      const timeString = `${slot.getHours()}:${slot.getMinutes()}`;
+      return !bookedTimes.includes(timeString);
+    });
+
+    const formattedSlots = availableSlots.map((slot) => formatSlotRange(slot));
+
+    res.status(200).json({ formattedSlots });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch available slots." });
+  }
 };
 
 //Get All Appointment For Patient
@@ -51,9 +102,29 @@ export const getAppointment = async (req, res) => {
 export const takeAppointment = async (req, res) => {
   try {
     const { date, time } = req.body;
+
+    // Validate date and time
+    if (!date || !time) {
+      return res.status(400).json({
+        success: false,
+        message: "Date and time are required",
+      });
+    }
+
+    // Create proper Date objects
+    const appointmentDate = new Date(date);
+    const appointmentTime = new Date(time);
+
+    if (isNaN(appointmentDate.getTime()) || isNaN(appointmentTime.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date or time format",
+      });
+    }
+
     const newAppointment = new Appointment({
-      date,
-      time,
+      date: appointmentDate,
+      time: appointmentTime,
       patientID: req.user.id,
       status: "Scheduled",
     });
@@ -85,9 +156,21 @@ export const takeAppointment = async (req, res) => {
 export const cancelAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
-    const appointment = await Appointment.findByIdAndUpdate(appointmentId, {
-      status: "Cancelled",
-    });
+
+    // First find the appointment
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    // Update the status
+    appointment.status = "Cancelled";
+    await appointment.save();
+
     const patient = await Patient.findById(req.user.id).select("name");
 
     const appointmentDate = new Date(appointment.date).toLocaleDateString(
@@ -111,7 +194,7 @@ export const cancelAppointment = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "Appointment Canceled successfully." });
+      .json({ success: true, message: "Appointment canceled successfully." });
   } catch (error) {
     res
       .status(500)
@@ -124,39 +207,47 @@ export const rescheduleAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const { date, time } = req.body;
-    const appointment = await Appointment.findByIdAndUpdate(appointmentId, {
-      date,
-      time,
+
+    // First find the appointment
+    const oldAppointment = await Appointment.findById(appointmentId);
+
+    if (!oldAppointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    // Store old appointment details for notification
+    const oldDate = new Date(oldAppointment.date);
+    const oldTime = new Date(oldAppointment.time);
+
+    const oldDateFormatted = oldDate.toLocaleDateString("fr-FR");
+    const oldTimeFormatted = oldTime.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
+
+    // Update with new values if provided
+    if (date) oldAppointment.date = new Date(date);
+    if (time) oldAppointment.time = new Date(time);
+
+    await oldAppointment.save();
 
     const patient = await Patient.findById(req.user.id).select("name");
 
-    const appointmentDate = new Date(appointment.date).toLocaleDateString(
-      "fr-FR"
-    );
-    const appointmentTime = new Date(appointment.time).toLocaleTimeString(
-      "fr-FR",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }
-    );
-
-    const newAppointmentDate = date
-      ? new Date(date).toLocaleDateString("fr-FR")
-      : appointmentDate;
-    const newAppointmentTime = time
-      ? new Date(time).toLocaleTimeString("fr-FR", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-      : appointmentTime;
+    // Format new appointment details
+    const newDateFormatted = oldAppointment.date.toLocaleDateString("fr-FR");
+    const newTimeFormatted = oldAppointment.time.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} Reschedule their appointment on ${appointmentDate} at ${appointmentTime} to ${newAppointmentDate} at ${newAppointmentTime}`,
+      `Patient ${patient.name} rescheduled their appointment from ${oldDateFormatted} at ${oldTimeFormatted} to ${newDateFormatted} at ${newTimeFormatted}`,
       "admin",
       io
     );

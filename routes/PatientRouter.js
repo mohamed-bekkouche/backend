@@ -12,6 +12,7 @@ import {
   getAllScans,
   getScan,
   getAllDoctors,
+  getAvailableSlots,
 } from "../controllers/PatientController.js";
 import { authenticateToken, authorizeRoles } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multerConfig.js";
@@ -36,6 +37,14 @@ patientRoutes.get(
   authenticateToken,
   authorizeRoles(["Patient"]),
   getAppointment
+);
+
+// Get One Appointment Of A Patient By Id
+patientRoutes.get(
+  "/available-appointments",
+  authenticateToken,
+  authorizeRoles(["Patient"]),
+  getAvailableSlots
 );
 
 // Take An Appointment For A Patient

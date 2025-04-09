@@ -4,11 +4,12 @@ import {
   markAsRead,
   markAllAsRead,
 } from "../controllers/notificationController.js";
+import { authenticateToken } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get("/:userId", getNotifications);
+router.get("/", authenticateToken, getNotifications);
 router.put("/read/:notificationId", markAsRead);
-router.put("/read-all/:userId", markAllAsRead);
+router.put("/read-all", authenticateToken, markAllAsRead);
 
 export default router;

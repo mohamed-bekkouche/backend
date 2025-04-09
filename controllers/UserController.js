@@ -279,3 +279,59 @@ export const changeAvatar = async (req, res) => {
       .json({ message: "Error When Changing Avatar", error: error.message });
   }
 };
+
+export const initiatePasswordRecovery = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    const token = jwt.sign({ email }, `${process.env.TOKEN_SECRET}`);
+
+    const resetUrl = `http://localhost:3000/reset-password/${token}`;
+
+    const template = fs.readFileSync(
+      path.join(__dirname, "../mails/resetPassword.ejs"),
+      "utf8"
+    );
+
+    const html = ejs.render(template, { resetUrl, username: email });
+
+    await transporter.sendMail({
+      from: `Elearning <${process.env.SMTP_MAIL}>`,
+      to: email,
+      subject: "Password Reset Request",
+      html,
+    });
+
+    res.status(200).json({ message: "Reset link sent to your email.", token });
+  } catch (error) {
+    res.status(500).json({ err: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    let { newPassword, token } = req.body;
+    if (!token)
+      return res.status(403).json({ err: "You Must provide a Token" });
+    const { email } = jwt.verify(token, `${process.env.TOKEN_SECRET}`);
+    const user = await User.findOne({
+      email,
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password has been reset." });
+  } catch (error) {
+    res.status(500).json({ err: error.message });
+  }
+};

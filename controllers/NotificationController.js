@@ -3,13 +3,11 @@ import mongoose from "mongoose";
 
 export const getNotifications = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     let query = {
       to: new mongoose.Types.ObjectId(userId), // Convert string to ObjectId
     };
     const { read } = req.query;
-
-    console.log("The User Id Is : ", userId);
 
     if (read !== undefined) {
       query.read = read === "true";
@@ -19,9 +17,7 @@ export const getNotifications = async (req, res) => {
       createdAt: -1,
     });
 
-    console.log("notifications : ", notifications);
-
-    res.status(200).json(notifications);
+    res.status(200).json({ notifications });
   } catch (error) {
     console.error("Error fetching notifications:", error);
     res.status(500).json({ message: error.message });
@@ -56,7 +52,7 @@ export const markAsRead = async (req, res) => {
 
 export const markAllAsRead = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
 
     const result = await Notification.updateMany(
       { to: userId, read: false },

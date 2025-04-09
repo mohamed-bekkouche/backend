@@ -380,9 +380,10 @@ export const uploadScan = async (req, res) => {
       .status(201)
       .json({ message: "Scan uploaded successfully.", scan: newScan });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "An error occurred while uploading the scan.", error });
+    res.status(500).json({
+      message: "An error occurred while uploading the scan.",
+      error: error.message,
+    });
   }
 };
 
