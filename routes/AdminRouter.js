@@ -9,6 +9,9 @@ import {
   rescheduleAppointment,
   uploadScan,
   deleteScan,
+  markDayAsUnavailable,
+  getUnavailableDays,
+  removeUnavailableDay,
 } from "../controllers/AdminController.js";
 import { authenticateToken, authorizeRoles } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multerConfig.js";
@@ -77,6 +80,29 @@ adminRoutes.put(
   authenticateToken,
   authorizeRoles(["Admin"]),
   rescheduleAppointment
+);
+
+// Mark Day As Unavailable (Holiday)
+adminRoutes.post(
+  "/appointments/unavailable",
+  authenticateToken,
+  authorizeRoles(["Admin"]),
+  markDayAsUnavailable
+);
+
+// Get Unavailable Day (Get Holidays)
+adminRoutes.get(
+  "/appointments/unavailable",
+  authenticateToken,
+  getUnavailableDays
+);
+
+// Remove Unavailable Day By id (Remove Holiday)
+adminRoutes.delete(
+  "/appointments/unavailable/:id",
+  authenticateToken,
+  authorizeRoles(["Admin"]),
+  removeUnavailableDay
 );
 
 // ----------------------- Scan Routes -----------------------

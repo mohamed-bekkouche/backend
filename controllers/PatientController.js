@@ -7,6 +7,7 @@ import Doctor from "../models/Doctor.js";
 import Patient from "../models/Patient.js";
 import { sendNotification } from "../utitlitis/notification.js";
 import { generateTimeSlots } from "../utitlitis/getTimeSlots.js";
+import Holiday from "../models/Holiday.js";
 
 export const isPremium = (expDate) => {
   if (!expDate) return false;
@@ -30,6 +31,17 @@ export const getAvailableSlots = async (req, res) => {
 
     const selectedDate = new Date(date);
     selectedDate.setHours(0, 0, 0, 0);
+
+    const holiday = await Holiday.findOne({
+      date: selectedDate,
+    });
+
+    if (holiday) {
+      return res.status(200).json({
+        formattedSlots: [],
+        message: `No slots available. Reason: ${holiday.reason}`,
+      });
+    }
 
     const nextDay = new Date(selectedDate);
     nextDay.setDate(selectedDate.getDate() + 1);
@@ -63,7 +75,6 @@ export const getAvailableSlots = async (req, res) => {
   }
 };
 
-//Get All Appointment For Patient
 export const getAllAppointment = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -126,7 +137,7 @@ export const takeAppointment = async (req, res) => {
       date: appointmentDate,
       time: appointmentTime,
       patientID: req.user.id,
-      status: "Scheduled",
+      status: "Pending",
     });
 
     const patient = await Patient.findById(req.user.id).select("name");
@@ -208,7 +219,6 @@ export const rescheduleAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     const { date, time } = req.body;
 
-    // First find the appointment
     const oldAppointment = await Appointment.findById(appointmentId);
 
     if (!oldAppointment) {
@@ -237,7 +247,6 @@ export const rescheduleAppointment = async (req, res) => {
 
     const patient = await Patient.findById(req.user.id).select("name");
 
-    // Format new appointment details
     const newDateFormatted = oldAppointment.date.toLocaleDateString("fr-FR");
     const newTimeFormatted = oldAppointment.time.toLocaleTimeString("fr-FR", {
       hour: "2-digit",

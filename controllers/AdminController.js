@@ -9,6 +9,7 @@ import { transporter } from "../utitlitis/sendMail.js";
 import Patient from "../models/Patient.js";
 import Scan from "../models/Scan.js";
 import { sendNotification } from "../utitlitis/notification.js";
+import Holiday from "../models/Holiday.js";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -347,6 +348,116 @@ export const rescheduleAppointment = async (req, res) => {
       message: "An error occurred",
       error: error.message,
     });
+  }
+};
+
+// Mark Day As Unavailable (take a day as a holiday)
+export const markDayAsUnavailable = async (req, res) => {
+  try {
+    const { date, reason } = req.body;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required" });
+    }
+
+    const holidayDate = new Date(date);
+    holidayDate.setHours(0, 0, 0, 0);
+
+    const existingHoliday = await Holiday.findOne({ date: holidayDate });
+
+    if (existingHoliday) {
+      return res.status(400).json({
+        message: "This day is already marked as unavailable",
+        holiday: existingHoliday,
+      });
+    }
+
+    const holiday = new Holiday({
+      date: holidayDate,
+      reason: reason || "Holiday",
+      createdBy: req.user.id,
+    });
+
+    await holiday.save();
+
+    const startOfDay = new Date(holidayDate);
+    const endOfDay = new Date(holidayDate);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    const affectedAppointments = await Appointment.updateMany(
+      {
+        date: {
+          $gte: startOfDay,
+          $lt: endOfDay,
+        },
+        status: "Approved",
+      },
+      {
+        $set: {
+          status: "Cancelled",
+          cancellationReason: `Day marked as unavailable: ${
+            reason || "Holiday"
+          }`,
+        },
+      }
+    );
+
+    res.status(201).json({
+      message: "Day marked as unavailable successfully",
+      holiday,
+      affectedAppointments: affectedAppointments.modifiedCount,
+    });
+  } catch (err) {
+    console.error("Error marking day as unavailable:", err);
+    res.status(500).json({ message: "Failed to mark day as unavailable" });
+  }
+};
+
+// Get All Holidays
+export const getUnavailableDays = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    let query = {};
+
+    if (month && year) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 0);
+
+      query = {
+        date: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    const holidays = await Holiday.find(query).sort({ date: 1 });
+
+    res.status(200).json({ holidays });
+  } catch (err) {
+    console.error("Error fetching unavailable days:", err);
+    res.status(500).json({ message: "Failed to fetch unavailable days" });
+  }
+};
+
+// Remove a Holiday
+export const removeUnavailableDay = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const holiday = await Holiday.findById(id);
+
+    if (!holiday) {
+      return res.status(404).json({ message: "Unavailable day not found" });
+    }
+
+    await Holiday.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Unavailable day removed successfully" });
+  } catch (err) {
+    console.error("Error removing unavailable day:", err);
+    res.status(500).json({ message: "Failed to remove unavailable day" });
   }
 };
 

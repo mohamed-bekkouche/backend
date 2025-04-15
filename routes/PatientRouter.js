@@ -39,7 +39,7 @@ patientRoutes.get(
   getAppointment
 );
 
-// Get One Appointment Of A Patient By Id
+// Get Available Appointment Times
 patientRoutes.get(
   "/available-appointments",
   authenticateToken,
