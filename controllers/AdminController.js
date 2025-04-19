@@ -133,6 +133,40 @@ export const rejectDoctor = async (req, res) => {
   }
 };
 
+// Get All Appointment
+export const getAppointments = async (req, res) => {
+  try {
+    const { limit = 10, page = 1 } = req.query;
+
+    const appointments = await Appointment.find()
+      .skip(limit * (page - 1))
+      .limit(limit);
+
+    res.status(200).json({ appointments });
+  } catch (error) {
+    res.status(500).json({
+      message: "An error occurred",
+      error: error.message,
+    });
+  }
+};
+
+export const getAppointmentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const appointment = await Appointment.findById(id);
+    if (!appointment) {
+      return res.status(404).json({ error: "Appointment Not Found" });
+    }
+    res.status(200).json({ appointment });
+  } catch (error) {
+    res.status(500).json({
+      message: "An error occurred",
+      error: error.message,
+    });
+  }
+};
+
 // Approve Appointment
 export const approveAppointment = async (req, res) => {
   try {

@@ -12,6 +12,8 @@ import {
   markDayAsUnavailable,
   getUnavailableDays,
   removeUnavailableDay,
+  getAppointments,
+  getAppointmentById,
 } from "../controllers/AdminController.js";
 import { authenticateToken, authorizeRoles } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multerConfig.js";
@@ -57,6 +59,22 @@ adminRoutes.put(
 // ----------------------- Appointment Routes -----------------------
 // ----------------------- Appointment Routes -----------------------
 // ----------------------- Appointment Routes -----------------------
+
+// get All Appointments
+adminRoutes.get(
+  "/appointments",
+  authenticateToken,
+  authorizeRoles(["Admin"]),
+  getAppointments
+);
+
+// get Appointment By Id
+adminRoutes.get(
+  "/appointments/:id",
+  authenticateToken,
+  authorizeRoles(["Admin"]),
+  getAppointmentById
+);
 
 // Approve Appointment By Id
 adminRoutes.put(
