@@ -21,6 +21,7 @@ const CreateToken = (user) => {
 // Sign Up
 export const signUp = async (req, res) => {
   const { name, email, password, phoneNum, address, role } = req.body;
+  const file = req.file;
   try {
     const userExist = await User.findOne({ email });
     if (userExist) {
@@ -34,6 +35,7 @@ export const signUp = async (req, res) => {
       phoneNum,
       address,
       role,
+      medical_license: file ? `/uploads/${file?.filename}` : null,
     });
 
     const activationUrl = `http://localhost:3000/activate_account/${token}`;
@@ -96,10 +98,11 @@ export const ActivateUser = async (req, res) => {
       role,
       specialization,
       schedule,
+      medical_license,
     } = user;
     const hashedPassword = await bcryptjs.hash(password, 10);
     let newUser;
-    if (role == "doctor") {
+    if (role.toLowerCase() == "doctor") {
       newUser = await Doctor.create({
         name,
         email,
@@ -109,6 +112,7 @@ export const ActivateUser = async (req, res) => {
         role: "Doctor",
         specialization,
         schedule,
+        medical_license,
       });
     } else {
       newUser = await Patient.create({
@@ -126,9 +130,11 @@ export const ActivateUser = async (req, res) => {
     }
 
     if (newUser.role === "Doctor") {
+      const io = req.app.get("io");
       sendNotification(
         `Dr.${newUser.name} has registered. Please review their application and activate or reject their account.`,
-        "admin"
+        "admin",
+        io
       );
     }
 
@@ -232,12 +238,20 @@ export const logOut = async (req, res) => {
 // Apdate Info
 export const updateUser = async (req, res) => {
   try {
-    const newUpdates = req.body;
+    const { newPassword, password, ...newUpdates } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { ...newUpdates },
       { new: true }
     );
+    if (password && newPassword) {
+      if (!(await user.comparePassword(password))) {
+        return res.status(401).json({ message: "Password incorrect" });
+      }
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+    }
     res.status(200).json({ message: " User Updated Successfully", user });
   } catch (error) {
     res

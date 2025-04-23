@@ -15,7 +15,7 @@ import { upload } from "../middlewares/multerConfig.js";
 
 const userRoutes = Router();
 
-userRoutes.post("/signup", signUp);
+userRoutes.post("/signup", upload.single("image"), signUp);
 userRoutes.post("/activate-account", ActivateUser);
 userRoutes.post("/login", logIn);
 userRoutes.post("/refresh-token", refreshToken);

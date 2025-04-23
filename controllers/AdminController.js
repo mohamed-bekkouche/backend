@@ -1,6 +1,5 @@
 import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
-import Message from "../models/Message.js";
 import User from "../models/User.js";
 import fs from "fs";
 import path from "path";
@@ -55,11 +54,12 @@ export const deleteUser = async (req, res) => {
 export const activateDoctor = async (req, res) => {
   try {
     const { doctorId } = req.params;
+
     const doctor = await Doctor.findByIdAndUpdate(doctorId, { isActive: true });
 
     const io = req.app.get("io");
     await sendNotification(
-      `Dr.${doctor.name} Your DEEPVISION LAB Account Has Been Approved`,
+      `Dr.${doctor?.name} Your DEEPVISION LAB Account Has Been Approved`,
       doctor._id,
       io
     );
