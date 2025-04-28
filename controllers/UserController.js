@@ -19,6 +19,61 @@ const CreateToken = (user) => {
 };
 
 // Sign Up
+// export const signUp = async (req, res) => {
+//   const { name, email, password, phoneNum, address, role } = req.body;
+//   const file = req.file;
+//   try {
+//     const userExist = await User.findOne({ email });
+//     if (userExist) {
+//       return res.status(500).json({ message: `User already exist` });
+//     }
+
+//     const { token, activation } = CreateToken({
+//       name,
+//       email,
+//       password,
+//       phoneNum,
+//       address,
+//       role,
+//       medical_license: file ? `/uploads/${file?.filename}` : null,
+//     });
+
+//     const activationUrl = `http://localhost:3000/activate_account/${token}`;
+
+//     const template = fs.readFileSync(
+//       path.join(__dirname, "../mails/activateAccount.ejs"),
+//       "utf8"
+//     );
+
+//     const html = ejs.render(template, {
+//       activationUrl,
+//       username: email,
+//       activationCode: activation,
+//     });
+
+//     await transporter.sendMail({
+//       from: `DEEPVISION LAB <${process.env.SMTP_MAIL}>`,
+//       to: email,
+//       subject: `Activation Code is ${activation}`,
+//       html,
+//     });
+
+//     res.cookie("jwt", token, {
+//       httpOnly: true,
+//       sameSite: "None",
+//       secure: true,
+//       maxAge: 7 * 24 * 60 * 60 * 1000,
+//     });
+
+//     res.status(200).json({ token, activation });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+//Activate Account
+
 export const signUp = async (req, res) => {
   const { name, email, password, phoneNum, address, role } = req.body;
   const file = req.file;
@@ -40,23 +95,24 @@ export const signUp = async (req, res) => {
 
     const activationUrl = `http://localhost:3000/activate_account/${token}`;
 
-    const template = fs.readFileSync(
-      path.join(__dirname, "../mails/activateAccount.ejs"),
-      "utf8"
-    );
+    const templatePath = path.join(__dirname, "../mails/activateAccount.ejs");
 
-    const html = ejs.render(template, {
-      activationUrl,
-      username: email,
-      activationCode: activation,
-    });
+    if (fs.existsSync(templatePath)) {
+      const template = fs.readFileSync(templatePath, "utf8");
 
-    await transporter.sendMail({
-      from: `DEEPVISION LAB <${process.env.SMTP_MAIL}>`,
-      to: email,
-      subject: `Activation Code is ${activation}`,
-      html,
-    });
+      const html = ejs.render(template, {
+        activationUrl,
+        username: email,
+        activationCode: activation,
+      });
+
+      await transporter.sendMail({
+        from: `DEEPVISION LAB <${process.env.SMTP_MAIL}>`,
+        to: email,
+        subject: `Activation Code is ${activation}`,
+        html,
+      });
+    }
 
     res.cookie("jwt", token, {
       httpOnly: true,
@@ -72,7 +128,6 @@ export const signUp = async (req, res) => {
   }
 };
 
-//Activate Account
 export const ActivateUser = async (req, res) => {
   let { activationCode, token } = req.body;
   if (!token) {
