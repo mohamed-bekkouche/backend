@@ -23,7 +23,6 @@ export const initializeSocket = (httpServer) => {
     socket.on("register-user", (userId) => {
       userSockets.set(userId.toString(), socket.id);
 
-      // Join notification room
       socket.join(`user-${userId}`);
 
       // Join message rooms if needed
@@ -60,7 +59,8 @@ export const initializeSocket = (httpServer) => {
 
         if (data.shouldNotify) {
           const notificationData = {
-            content: `New message from ${data.senderType}`,
+            contentEn: `New message from ${data.senderType}`,
+            contentFr: `Nouveau message de ${data.senderType}`,
             to: data.senderType === "admin" ? data.patientId : "admin",
           };
           io.emit("send-notification", notificationData);
@@ -73,7 +73,8 @@ export const initializeSocket = (httpServer) => {
     socket.on("send-notification", async (notificationData) => {
       try {
         const newNotification = new Notification({
-          content: notificationData.content,
+          contentEn: notificationData.contentEn,
+          contentFr: notificationData.contentFr,
           to: notificationData.to,
           read: false,
         });

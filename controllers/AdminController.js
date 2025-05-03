@@ -60,6 +60,7 @@ export const activateDoctor = async (req, res) => {
     const io = req.app.get("io");
     await sendNotification(
       `Dr.${doctor?.name} Your DEEPVISION LAB Account Has Been Approved`,
+      `Dr.${doctor?.name} Votre compte DEEPVISION LAB a été approuvé`,
       doctor._id,
       io
     );
@@ -101,7 +102,8 @@ export const rejectDoctor = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Dr.${doctor.name} Your DEEPVISION LAB Account Has Been Refuse`,
+      `Dr.${doctor.name} Your DEEPVISION LAB Account Has Been Rejected`,
+      `Dr.${doctor.name} Votre compte DEEPVISION LAB a été rejeté`,
       doctor._id,
       io
     );
@@ -194,8 +196,9 @@ export const approveAppointment = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} Your Appointment on ${appointmentDate} at ${appointmentTime}. Has Been Approve`,
-      patient._id,
+      `Your appointment has been approved`,
+      `Votre rendez-vous a été approuvé`,
+      appointment.patientID,
       io
     );
 
@@ -261,8 +264,9 @@ export const refuseAppointment = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} Your Appointment on ${appointmentDate} at ${appointmentTime}. Has Been Refuse`,
-      patient._id,
+      `Your appointment has been refused`,
+      `Votre rendez-vous avec a été refusé`,
+      appointment.patientID,
       io
     );
 
@@ -330,8 +334,9 @@ export const rescheduleAppointment = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} Your Appointment Has Been Reschedule to ${appointmentDate} at ${appointmentTime}`,
-      patient._id,
+      `Your appointment has been rescheduled`,
+      `Votre rendez-vous avec a été reprogrammé`,
+      appointment.patientID,
       io
     );
 
@@ -517,6 +522,7 @@ export const uploadScan = async (req, res) => {
     const io = req.app.get("io");
     await sendNotification(
       `Patient ${patient.name} Your Scan Is Uploaded`,
+      `Patient ${patient.name} Votre scan est téléchargé`,
       patient._id,
       io
     );

@@ -147,6 +147,7 @@ export const takeAppointment = async (req, res) => {
 
     await sendNotification(
       `Patient ${patient.name} has taken an appointment. Please review their application.`,
+      `Le patient ${patient.name} a pris un rendez-vous. Veuillez examiner sa demande.`,
       "admin",
       io
     );
@@ -198,8 +199,9 @@ export const cancelAppointment = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} canceled their appointment on ${appointmentDate} at ${appointmentTime}.`,
-      "admin",
+      `Your appointment has been cancelled successfully`,
+      `Votre rendez-vous a été annulé avec succès`,
+      appointment.patientID,
       io
     );
 
@@ -256,8 +258,9 @@ export const rescheduleAppointment = async (req, res) => {
 
     const io = req.app.get("io");
     await sendNotification(
-      `Patient ${patient.name} rescheduled their appointment from ${oldDateFormatted} at ${oldTimeFormatted} to ${newDateFormatted} at ${newTimeFormatted}`,
-      "admin",
+      `Your appointment has been rescheduled successfully`,
+      `Votre rendez-vous a été reprogrammé avec succès`,
+      oldAppointment.patientID,
       io
     );
 

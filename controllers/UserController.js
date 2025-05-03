@@ -188,6 +188,7 @@ export const ActivateUser = async (req, res) => {
       const io = req.app.get("io");
       sendNotification(
         `Dr.${newUser.name} has registered. Please review their application and activate or reject their account.`,
+        `Dr.${newUser.name} s'est inscrit. Veuillez examiner sa demande et activer ou rejeter son compte.`,
         "admin",
         io
       );

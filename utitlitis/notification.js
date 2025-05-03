@@ -2,10 +2,10 @@
 import Notification from "../models/Notification.js";
 import mongoose from "mongoose";
 
-export const sendNotification = async (content, to, io) => {
+export const sendNotification = async (contentEn, contentFr, to, io) => {
   try {
     // Validate inputs
-    if (!content || !to) {
+    if (!contentEn || !contentFr || !to) {
       throw new Error("Content and recipient are required");
     }
 
@@ -16,7 +16,8 @@ export const sendNotification = async (content, to, io) => {
 
     // Create and save notification
     const newNotification = new Notification({
-      content,
+      contentEn,
+      contentFr,
       to,
       read: false,
     });
@@ -33,7 +34,7 @@ export const sendNotification = async (content, to, io) => {
   } catch (error) {
     console.error("Notification error:", {
       error: error.message,
-      content,
+      contentEn,
       to,
       timestamp: new Date().toISOString(),
     });
