@@ -59,7 +59,7 @@ export const initializeSocket = (httpServer) => {
 
         if (data.shouldNotify) {
           const notificationData = {
-            contentEn: `New message from ${data.senderType}`,
+            content: `New message from ${data.senderType}`,
             contentFr: `Nouveau message de ${data.senderType}`,
             to: data.senderType === "admin" ? data.patientId : "admin",
           };
@@ -73,7 +73,7 @@ export const initializeSocket = (httpServer) => {
     socket.on("send-notification", async (notificationData) => {
       try {
         const newNotification = new Notification({
-          contentEn: notificationData.contentEn,
+          content: notificationData.content,
           contentFr: notificationData.contentFr,
           to: notificationData.to,
           read: false,

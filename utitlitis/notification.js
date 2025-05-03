@@ -16,7 +16,7 @@ export const sendNotification = async (contentEn, contentFr, to, io) => {
 
     // Create and save notification
     const newNotification = new Notification({
-      contentEn,
+      content,
       contentFr,
       to,
       read: false,
