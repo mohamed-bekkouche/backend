@@ -472,3 +472,28 @@ export const getAllDoctors = async (req, res) => {
     });
   }
 };
+
+export const checIfPatientPremium = async (req, res) => {
+  try {
+    const patientId = req.user?.id || req.query.patientId;
+
+    const subscription = await Subscription.findOne({
+      patientID: patientId,
+      status: { $in: ["active", "expired"] },
+    });
+
+    if (!subscription)
+      return res.status(400).json({
+        message: "You Have To Upgrade Your Account To Access This Feature",
+      });
+
+    const isPatientPremium =
+      isPremium(subscription.expDate) && subscription.status === "active";
+    res.status(200).json({ subscription, isPatientPremium });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error Checking if Patient is Premium",
+      error: error.message,
+    });
+  }
+};

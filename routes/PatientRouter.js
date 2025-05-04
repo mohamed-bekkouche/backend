@@ -13,6 +13,7 @@ import {
   getScan,
   getAllDoctors,
   getAvailableSlots,
+  checIfPatientPremium,
 } from "../controllers/PatientController.js";
 import { authenticateToken, authorizeRoles } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multerConfig.js";
@@ -131,5 +132,7 @@ patientRoutes.get(
   authorizeRoles(["Patient"]),
   getAllDoctors
 );
+
+patientRoutes.get("/premium", authenticateToken, checIfPatientPremium);
 
 export default patientRoutes;
